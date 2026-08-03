@@ -18,7 +18,9 @@ sudo apt-get install -y git build-essential ninja-build python3-pip python3-dev 
 # Use uv python 3.12 for VapourSynth
 echo "Setting up Python 3.12 virtualenv with uv..."
 uv python install 3.12
-uv venv --python 3.12 .venv
+if [ ! -d ".venv" ]; then
+    uv venv --python 3.12 .venv
+fi
 source .venv/bin/activate
 uv pip install meson ninja cython
 
@@ -91,7 +93,7 @@ echo "Step 1.5: Installing zsmooth and essential VapourSynth plugins"
 echo "======================================"
 # Re-activate virtualenv just in case
 source .venv/bin/activate
-uv pip install vsutil vstools vskernels havsfunc mvsfunc
+uv pip install vsutil vstools vskernels havsfunc
 uv pip install git+https://github.com/adworacz/zsmooth.git
 
 # 2. Build mpv using mpv-build
