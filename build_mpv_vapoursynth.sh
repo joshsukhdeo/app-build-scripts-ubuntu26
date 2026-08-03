@@ -92,12 +92,22 @@ if [ -n "$VS_PKG_CONFIG" ]; then
     # Create a user-friendly vapoursynth command that runs Python with the venv
     sudo tee /usr/local/bin/vapoursynth > /dev/null << 'EOF'
 #!/bin/bash
-if [ $# -eq 0 ]; then
-    echo "Starting VapourSynth Python REPL..."
-    exec /opt/vapoursynth-venv/bin/python
-else
+if [ $# -eq 0 ] || [[ "$1" == "-h" ]] || [[ "$1" == "--help" ]]; then
+    echo "VapourSynth CLI Wrapper"
+    echo "Usage: vapoursynth <script.vpy> [options...]"
+    echo ""
+    echo "This wrapper executes VapourSynth scripts using the configured Python environment."
+    echo "To enter an interactive Python REPL with VapourSynth loaded, use:"
+    echo "  vapoursynth --repl"
+    exit 0
+fi
+
+if [[ "$1" == "--repl" ]]; then
+    shift
     exec /opt/vapoursynth-venv/bin/python "$@"
 fi
+
+exec /opt/vapoursynth-venv/bin/python "$@"
 EOF
     sudo chmod +x /usr/local/bin/vapoursynth
 else
