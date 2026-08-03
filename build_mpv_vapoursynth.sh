@@ -124,7 +124,6 @@ source $VS_VENV/bin/activate
 uv pip install vsutil vstools vskernels havsfunc psutil numpy scipy numexpr orjson
 uv pip install git+https://github.com/adworacz/zsmooth.git
 uv pip install git+https://github.com/HomeOfVapourSynthEvolution/mvsfunc.git
-uv pip install git+https://github.com/dubhater/vapoursynth-adjust.git
 
 # 2. Build mpv using mpv-build
 echo "======================================"
