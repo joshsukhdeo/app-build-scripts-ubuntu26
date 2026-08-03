@@ -15,13 +15,16 @@ sudo apt-get install -y git build-essential ninja-build python3-pip python3-dev 
     libass-dev libbluray-dev libdvdread-dev libdvdnav-dev libuchardet-dev \
     mediainfo lsof libqt5concurrent5 libqt5svg5 libqt5qml5
 
-# Use uv python 3.12 for VapourSynth
-echo "Setting up Python 3.12 virtualenv with uv..."
+# Use a global persistent virtualenv for VapourSynth so mpv and CLI can share it
+export VS_VENV="/opt/vapoursynth-venv"
+echo "Setting up Python 3.12 virtualenv with uv at $VS_VENV..."
+sudo mkdir -p $VS_VENV
+sudo chown -R $USER:$USER $VS_VENV
 uv python install 3.12
-if [ ! -d ".venv" ]; then
-    uv venv --python 3.12 .venv
+if [ ! -d "$VS_VENV/bin" ]; then
+    uv venv --python 3.12 $VS_VENV
 fi
-source .venv/bin/activate
+source $VS_VENV/bin/activate
 uv pip install meson ninja cython
 
 
@@ -82,6 +85,10 @@ if [ -n "$VS_PKG_CONFIG" ]; then
     # Copy shared libraries to standard lib path
     sudo cp -a "$VS_LIB_DIR"/libvapoursynth*.so* /usr/local/lib/
     sudo ldconfig
+    
+    # Expose vapoursynth CLI commands
+    sudo ln -sf "$VS_VENV/bin/vspipe" /usr/local/bin/vspipe
+    sudo ln -sf "$VS_VENV/bin/vspipe" /usr/local/bin/vapoursynth
 else
     echo "WARNING: Could not find vapoursynth.pc"
 fi
@@ -92,7 +99,7 @@ echo "======================================"
 echo "Step 1.5: Installing zsmooth and essential VapourSynth plugins"
 echo "======================================"
 # Re-activate virtualenv just in case
-source .venv/bin/activate
+source $VS_VENV/bin/activate
 uv pip install vsutil vstools vskernels havsfunc
 uv pip install git+https://github.com/adworacz/zsmooth.git
 
@@ -140,13 +147,15 @@ echo "Running rebuild to compile FFmpeg and mpv..."
 ./rebuild -j$(nproc)
 
 echo "Installing compiled mpv..."
-sudo ../.venv/bin/meson install -C mpv/build
+sudo $VS_VENV/bin/meson install -C mpv/build
 
-echo "Setting up jemalloc wrapper for mpv..."
+echo "Setting up jemalloc and VapourSynth python env wrapper for mpv..."
 sudo mv /usr/local/bin/mpv /usr/local/bin/mpv-bin
 sudo bash -c 'cat << EOF > /usr/local/bin/mpv
 #!/bin/bash
 export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2
+# Ensure VapourSynth loads plugins from the system-wide venv
+export PYTHONPATH=/opt/vapoursynth-venv/lib/python3.12/site-packages:\$PYTHONPATH
 exec /usr/local/bin/mpv-bin "\$@"
 EOF'
 sudo chmod +x /usr/local/bin/mpv
