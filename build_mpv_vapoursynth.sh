@@ -156,6 +156,7 @@ sudo bash -c 'cat << EOF > /usr/local/bin/mpv
 export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2
 # Ensure VapourSynth loads plugins from the system-wide venv
 export PYTHONPATH=/opt/vapoursynth-venv/lib/python3.12/site-packages:\$PYTHONPATH
+export VSSCRIPT_PATH=/opt/vapoursynth-venv/lib/python3.12/site-packages/vapoursynth/libvsscript.so
 exec /usr/local/bin/mpv-bin "\$@"
 EOF'
 sudo chmod +x /usr/local/bin/mpv
