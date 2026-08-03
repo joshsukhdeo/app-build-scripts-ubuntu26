@@ -17,12 +17,12 @@ sudo apt-get install -y git build-essential ninja-build python3-pip python3-dev 
 
 # Use a global persistent virtualenv for VapourSynth so mpv and CLI can share it
 export VS_VENV="/opt/vapoursynth-venv"
-echo "Setting up latest Python virtualenv with uv at $VS_VENV..."
+echo "Setting up Python 3.12 virtualenv with uv at $VS_VENV..."
 sudo mkdir -p $VS_VENV
 sudo chown -R $USER:$USER $VS_VENV
-uv python install
+uv python install 3.12
 if [ ! -d "$VS_VENV/bin" ]; then
-    uv venv $VS_VENV
+    uv venv --python 3.12 $VS_VENV
 fi
 source $VS_VENV/bin/activate
 uv pip install meson ninja cython
