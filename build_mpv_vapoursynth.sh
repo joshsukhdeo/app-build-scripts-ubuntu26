@@ -166,6 +166,9 @@ sudo chmod +x /usr/local/bin/mpv
 echo "Installing compiled FFmpeg..."
 sudo make -C ffmpeg_build install
 
+echo "Registering VapourSynth installation for the current user..."
+vapoursynth register-install
+
 echo "======================================"
 echo "Build and installation complete!"
 echo "You can verify the VapourSynth filter is available by running:"
