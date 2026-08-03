@@ -110,6 +110,13 @@ cd mpv-build
 echo "Configuring FFmpeg options..."
 echo "--enable-vapoursynth" > ffmpeg_options
 echo "--enable-libzimg" >> ffmpeg_options
+# Disable CUDA to prevent CUDA errors on non-Nvidia GPUs
+echo "--disable-cuda-llvm" >> ffmpeg_options
+echo "--disable-cuvid" >> ffmpeg_options
+echo "--disable-nvdec" >> ffmpeg_options
+echo "--disable-nvenc" >> ffmpeg_options
+# Enable Intel VAAPI for Arc GPU
+echo "--enable-vaapi" >> ffmpeg_options
 echo "--extra-cflags=-O3 -march=native -pipe" >> ffmpeg_options
 echo "--extra-cxxflags=-O3 -march=native -pipe" >> ffmpeg_options
 
