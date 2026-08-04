@@ -91,10 +91,13 @@ setup_python_venv() {
         exit 1
     fi
     
+    # Bootstrap pip inside the venv
+    "${VS_VENV}/bin/python" -m ensurepip --upgrade
+    
     # shellcheck source=/dev/null
     source "${VS_VENV}/bin/activate"
-    pip install --upgrade pip
-    pip install meson ninja cython
+    python -m pip install --upgrade pip
+    python -m pip install meson ninja cython
 }
 
 build_zimg() {
@@ -163,11 +166,11 @@ install_vs_plugins() {
     # shellcheck source=/dev/null
     source "${VS_VENV}/bin/activate"
     
-    # Always force upgrade for python modules and tools
-    pip install --upgrade pip
-    pip install --upgrade vsutil vstools vskernels havsfunc psutil numpy scipy numexpr orjson yt-dlp
-    pip install --upgrade --force-reinstall git+https://github.com/adworacz/zsmooth.git
-    pip install --upgrade --force-reinstall git+https://github.com/HomeOfVapourSynthEvolution/mvsfunc.git
+    # Always force upgrade for python modules and tools using python -m pip
+    python -m pip install --upgrade pip
+    python -m pip install --upgrade vsutil vstools vskernels havsfunc psutil numpy scipy numexpr orjson yt-dlp
+    python -m pip install --upgrade --force-reinstall git+https://github.com/adworacz/zsmooth.git
+    python -m pip install --upgrade --force-reinstall git+https://github.com/HomeOfVapourSynthEvolution/mvsfunc.git
     
     # Symlink yt-dlp so mpv and the system can use it
     sudo ln -sf "${VS_VENV}/bin/yt-dlp" /usr/local/bin/yt-dlp
