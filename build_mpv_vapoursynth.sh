@@ -238,6 +238,7 @@ EOF
     sudo tee /usr/local/bin/mpv > /dev/null << EOF
 #!/bin/bash
 export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2
+export MALLOC_CONF="background_thread:true,metadata_thp:auto,dirty_decay_ms:2000,muzzy_decay_ms:2000"
 export PYTHONPATH=${vs_python_site_packages}:\${PYTHONPATH:-}
 export VSSCRIPT_PATH=${vs_python_site_packages}/vapoursynth/libvsscript.so
 exec /usr/local/bin/mpv-bin "\$@"
