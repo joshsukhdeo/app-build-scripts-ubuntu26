@@ -6,24 +6,22 @@
 set -Eeuo pipefail
 shopt -s inherit_errexit 2>/dev/null || true
 
+# -----------------------------------------------------------------------------
+# Configuration
+# -----------------------------------------------------------------------------
+readonly VS_VENV="/opt/vapoursynth-venv"
+readonly TMP_DIR=$(mktemp -d)
 readonly VS_MLRT_REPO="https://github.com/AmusementClub/vs-mlrt.git"
 readonly PLUGIN_DIR="/usr/local/lib/vapoursynth"
-readonly VS_VENV="/opt/vapoursynth-venv"
 
-log_info() { printf "[INFO] %s\n" "$*"; }
-log_err() { printf "[ERROR] %s\n" "$*" >&2; }
+# shellcheck source=utils.sh
+source "$(dirname "${BASH_SOURCE[0]}")/utils.sh"
 
-TMP_DIR=$(mktemp -d)
-cleanup() {
-    local exit_code=$?
+script_cleanup() {
     rm -rf "${TMP_DIR}"
-    if [ ${exit_code} -ne 0 ]; then
-        log_err "Compilation failed with exit code ${exit_code}"
-    fi
-    exit ${exit_code}
+    cleanup # Call the generic cleanup from utils.sh
 }
-trap cleanup EXIT ERR
-
+trap script_cleanup EXIT ERR
 main() {
     log_info "Preparing vs-mlrt source compilation..."
     

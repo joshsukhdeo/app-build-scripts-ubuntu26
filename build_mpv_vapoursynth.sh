@@ -21,28 +21,11 @@ export CC="clang"
 export CXX="clang++"
 
 # -----------------------------------------------------------------------------
-# Logging Functions
+# Core Functions
 # -----------------------------------------------------------------------------
-log_info() {
-    printf "[INFO] %s\n" "$*"
-}
 
-log_err() {
-    printf "[ERROR] %s\n" "$*" >&2
-}
-
-log_step() {
-    printf "\n======================================\n"
-    printf " %s\n" "$*"
-    printf "======================================\n"
-}
-
-cleanup() {
-    local exit_code=$?
-    if [[ ${exit_code} -ne 0 ]]; then
-        log_err "Script failed with exit code ${exit_code} at line ${BASH_LINENO[0]}."
-    fi
-}
+# shellcheck source=utils.sh
+source "$(dirname "${BASH_SOURCE[0]}")/utils.sh"
 trap cleanup EXIT ERR
 
 # -----------------------------------------------------------------------------
@@ -74,7 +57,7 @@ install_dependencies() {
         luajit libluajit-5.1-dev libssl-dev libplacebo-dev libshaderc-dev \
         libass-dev libbluray-dev libdvdread-dev libdvdnav-dev libuchardet-dev \
         mediainfo lsof libqt5concurrent5 libqt5svg5 libqt5qml5 \
-        libmimalloc-dev numactl clang lld llvm \
+        libmimalloc-dev numactl clang lld llvm libstdc++-16-dev \
         libpipewire-0.3-dev libpulse-dev libasound2-dev \
         libarchive-dev libva-dev libvdpau-dev librubberband-dev
 }
@@ -222,7 +205,7 @@ EOF
 
     log_info "Running headless mpv to generate PGO profiling data..."
     export LLVM_PROFILE_FILE="default_%p.profraw"
-    ./mpv/build/mpv ../dummy.mp4 -vo=null -ao=null --frames=500 || true
+    ./mpv/build/mpv "av://lavfi:testsrc=size=1920x1080:rate=60:duration=10" -vo=null -ao=null || true
     
     log_info "Merging profraw files into profdata..."
     llvm-profdata merge -output=default.profdata *.profraw || true
