@@ -19,6 +19,9 @@ export CXXFLAGS="-O3 -march=native -mtune=native -pipe -fno-plt -fno-semantic-in
 export LDFLAGS="-Wl,-O1 -Wl,--as-needed -Wl,--sort-common -Wl,-z,now"
 export CC="clang"
 export CXX="clang++"
+export AR="llvm-ar"
+export NM="llvm-nm"
+export RANLIB="llvm-ranlib"
 
 # -----------------------------------------------------------------------------
 # Core Functions
