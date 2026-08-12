@@ -13,17 +13,22 @@ setup() {
     [ "$status" -eq 0 ]
 }
 
-@test "Script creates a safe temporary directory" {
+@test "Script implements safe temporary directory" {
     run grep -q "mktemp -d" "$SCRIPT"
     [ "$status" -eq 0 ]
 }
 
-@test "Script implements SHA256 checksum verification for security" {
-    run grep -q "sha256sum" "$SCRIPT"
+@test "Script dynamically locates OpenVINOConfig.cmake from pip installation" {
+    run grep -q "find.*OpenVINOConfig.cmake" "$SCRIPT"
     [ "$status" -eq 0 ]
 }
 
-@test "Script installs vs-mlrt to the VapourSynth plugin directory" {
-    run grep -q "/usr/local/lib/vapoursynth" "$SCRIPT"
+@test "Script compiles vs-mlrt with CMake and Ninja" {
+    run grep -q "cmake -G Ninja" "$SCRIPT"
+    [ "$status" -eq 0 ]
+}
+
+@test "Script enables OpenVINO backend in CMake" {
+    run grep -q "VSMLRT_BACKEND_OV=ON" "$SCRIPT"
     [ "$status" -eq 0 ]
 }
