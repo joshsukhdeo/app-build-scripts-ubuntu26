@@ -28,7 +28,8 @@ setup() {
     [ "$status" -eq 0 ]
 }
 
-@test "Script enables OpenVINO backend in CMake" {
-    run grep -q "VSMLRT_BACKEND_OV=ON" "$SCRIPT"
+@test "Script defines VapourSynth include directory for CMake" {
+    run grep -q "VAPOURSYNTH_INCLUDE_DIRECTORY" "$SCRIPT"
     [ "$status" -eq 0 ]
 }
+

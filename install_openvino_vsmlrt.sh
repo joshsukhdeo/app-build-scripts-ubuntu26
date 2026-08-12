@@ -27,9 +27,9 @@ trap cleanup EXIT ERR
 main() {
     log_info "Preparing vs-mlrt source compilation..."
     
-    log_info "Installing build dependencies (cmake, ninja-build)..."
+    log_info "Installing build dependencies (cmake, ninja-build, onnx, protobuf, stdc++)..."
     sudo apt-get update
-    sudo apt-get install -y cmake ninja-build git
+    sudo apt-get install -y build-essential cmake ninja-build git libonnx-dev libprotobuf-dev
     
     log_info "Installing OpenVINO C++ runtime via pip..."
     sudo "${VS_VENV}/bin/python" -m pip install --upgrade openvino
@@ -48,20 +48,21 @@ main() {
     
     log_info "Cloning vs-mlrt repository recursively..."
     git clone --recursive "${VS_MLRT_REPO}" vs-mlrt
-    cd vs-mlrt/vsmacros
+    cd vs-mlrt/vsov
+    
+    log_info "Patching CMakeLists.txt for Ubuntu Protobuf compatibility..."
+    # Ubuntu's libprotobuf-dev does not provide a CONFIG file, we must use the standard FindProtobuf module
+    sed -i 's/find_package(protobuf REQUIRED CONFIG)/find_package(Protobuf REQUIRED)/' CMakeLists.txt
     
     log_info "Configuring CMake build for OpenVINO..."
     mkdir build && cd build
     
-    export CC="clang"
-    export CXX="clang++"
+    # We let CMake default to GCC (via build-essential) to guarantee C++ ABI compatibility 
+    # with the pre-compiled Intel OpenVINO runtime libraries.
     
     cmake -G Ninja \
         -DCMAKE_BUILD_TYPE=Release \
-        -DVSMLRT_BACKEND_OV=ON \
-        -DVSMLRT_BACKEND_NCNN=OFF \
-        -DVSMLRT_BACKEND_TRT=OFF \
-        -DVSMLRT_BACKEND_ORT=OFF \
+        -DVAPOURSYNTH_INCLUDE_DIRECTORY=/usr/local/include/vapoursynth \
         -DOpenVINO_DIR="${OV_CMAKE_DIR}" \
         ..
         
