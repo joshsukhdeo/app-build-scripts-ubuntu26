@@ -172,6 +172,11 @@ build_mpv() {
 
     log_info "Configuring FFmpeg options..."
     cat > ffmpeg_options << 'EOF'
+--cc=clang
+--cxx=clang++
+--ar=llvm-ar
+--nm=llvm-nm
+--ranlib=llvm-ranlib
 --enable-vapoursynth
 --enable-libzimg
 --enable-gpl
