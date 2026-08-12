@@ -1,0 +1,3 @@
+[submodule "libs/bash-helpers"]
+	path = libs/bash-helpers
+	url = git@github.com:joshsukhdeo/bash-helpers.git

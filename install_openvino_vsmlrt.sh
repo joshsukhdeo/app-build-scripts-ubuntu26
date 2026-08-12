@@ -27,7 +27,7 @@ main() {
     
     log_info "Installing build dependencies (cmake, ninja-build, onnx, protobuf, stdc++)..."
     sudo apt-get update
-    sudo apt-get install -y build-essential cmake ninja-build git libonnx-dev libprotobuf-dev
+    sudo apt-get install -y build-essential cmake ninja-build git libonnx-dev libprotobuf-dev p7zip-full
     
     log_info "Installing OpenVINO C++ runtime via pip..."
     sudo "${VS_VENV}/bin/python" -m pip install --upgrade openvino
@@ -70,6 +70,24 @@ main() {
     log_info "Installing to VapourSynth plugin directory..."
     sudo mkdir -p "${PLUGIN_DIR}"
     sudo cp -a *.so "${PLUGIN_DIR}/"
+    
+    log_info "Installing vsmlrt python wrapper..."
+    if command -v gh >/dev/null 2>&1; then
+        gh api -H "Accept: application/vnd.github.v3.raw" /repos/AmusementClub/vs-mlrt/contents/scripts/vsmlrt.py > "${TMP_DIR}/vsmlrt.py"
+        sudo mv "${TMP_DIR}/vsmlrt.py" "${VS_VENV}/lib/python3.14/site-packages/vsmlrt.py"
+    else
+        sudo curl -sL "https://raw.githubusercontent.com/AmusementClub/vs-mlrt/master/scripts/vsmlrt.py" -o "${VS_VENV}/lib/python3.14/site-packages/vsmlrt.py"
+    fi
+    
+    log_info "Downloading and installing OpenVINO ONNX RIFE models..."
+    sudo mkdir -p "${PLUGIN_DIR}/models"
+    if command -v gh >/dev/null 2>&1; then
+        gh release download "external-models" -R "AmusementClub/vs-mlrt" -p "rife_v4.12_lite.7z" -D "${TMP_DIR}"
+        sudo 7z x "${TMP_DIR}/rife_v4.12_lite.7z" -o"${PLUGIN_DIR}/models/" -y
+    else
+        curl -sL "https://github.com/AmusementClub/vs-mlrt/releases/download/external-models/rife_v4.12_lite.7z" -o "${TMP_DIR}/rife.7z"
+        sudo 7z x "${TMP_DIR}/rife.7z" -o"${PLUGIN_DIR}/models/" -y
+    fi
     
     log_info "Source compilation complete. The OpenVINO vs-mlrt plugin is securely installed!"
 }
