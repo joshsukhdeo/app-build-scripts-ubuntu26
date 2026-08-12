@@ -17,6 +17,8 @@ readonly USER_NAME="${SUDO_USER:-$USER}"
 export CFLAGS="-O3 -march=native -mtune=native -pipe -fno-plt -fno-semantic-interposition"
 export CXXFLAGS="-O3 -march=native -mtune=native -pipe -fno-plt -fno-semantic-interposition"
 export LDFLAGS="-Wl,-O1 -Wl,--as-needed -Wl,--sort-common -Wl,-z,now"
+export CC="clang"
+export CXX="clang++"
 
 # -----------------------------------------------------------------------------
 # Logging Functions
@@ -72,7 +74,7 @@ install_dependencies() {
         luajit libluajit-5.1-dev libssl-dev libplacebo-dev libshaderc-dev \
         libass-dev libbluray-dev libdvdread-dev libdvdnav-dev libuchardet-dev \
         mediainfo lsof libqt5concurrent5 libqt5svg5 libqt5qml5 \
-        libjemalloc2 libjemalloc-dev numactl \
+        libmimalloc-dev numactl clang lld \
         libpipewire-0.3-dev libpulse-dev libasound2-dev \
         libarchive-dev libva-dev libvdpau-dev librubberband-dev
 }
@@ -227,8 +229,8 @@ EOF
     
     sudo tee /usr/local/bin/mpv > /dev/null << EOF
 #!/bin/bash
-export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2
-export MALLOC_CONF="background_thread:true,metadata_thp:auto,dirty_decay_ms:2000,muzzy_decay_ms:2000"
+export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libmimalloc.so.2
+export MIMALLOC_LARGE_OS_PAGES=1
 export PYTHONPATH=${vs_python_site_packages}:\${PYTHONPATH:-}
 export VSSCRIPT_PATH=${vs_python_site_packages}/vapoursynth/libvsscript.so
 export OCL_ICD_VENDORS=none
@@ -263,8 +265,12 @@ main() {
     check_prerequisites
     clear_build_caches
     install_dependencies
-    setup_python_venv
-    build_zimg
+    
+    # Phase 1: Bash Concurrency (Parallelize independent tasks)
+    setup_python_venv &
+    build_zimg &
+    wait
+
     build_vapoursynth
     install_vs_plugins
     build_mpv
