@@ -74,7 +74,7 @@ install_dependencies() {
         luajit libluajit-5.1-dev libssl-dev libplacebo-dev libshaderc-dev \
         libass-dev libbluray-dev libdvdread-dev libdvdnav-dev libuchardet-dev \
         mediainfo lsof libqt5concurrent5 libqt5svg5 libqt5qml5 \
-        libmimalloc-dev numactl clang lld \
+        libmimalloc-dev numactl clang lld llvm \
         libpipewire-0.3-dev libpulse-dev libasound2-dev \
         libarchive-dev libva-dev libvdpau-dev librubberband-dev
 }
@@ -209,6 +209,7 @@ EOF
 -Drubberband=enabled
 -Doptimization=3
 -Db_lto=true
+-Db_pgo=generate
 -Dc_args=-march=native -mtune=native -pipe
 -Dcpp_args=-march=native -mtune=native -pipe
 -Dalsa=enabled
@@ -216,10 +217,23 @@ EOF
 -Dpipewire=enabled
 EOF
 
-    log_info "Running rebuild to compile FFmpeg and mpv..."
+    log_info "Running rebuild to compile FFmpeg and mpv (PGO Pass 1)..."
     ./rebuild "-j$(nproc)"
 
-    log_info "Installing compiled mpv..."
+    log_info "Running headless mpv to generate PGO profiling data..."
+    export LLVM_PROFILE_FILE="default_%p.profraw"
+    ./mpv/build/mpv ../dummy.mp4 -vo=null -ao=null --frames=500 || true
+    
+    log_info "Merging profraw files into profdata..."
+    llvm-profdata merge -output=default.profdata *.profraw || true
+
+    log_info "Configuring mpv options (PGO Use Phase)..."
+    sed -i 's/-Db_pgo=generate/-Db_pgo=use/g' mpv_options
+    
+    log_info "Rebuilding mpv (PGO Pass 2)..."
+    ./build-mpv "-j$(nproc)"
+
+    log_info "Installing PGO-optimized mpv..."
     sudo "${VS_VENV}/bin/meson" install -C mpv/build
 
     log_info "Setting up jemalloc and VapourSynth python env wrapper for mpv..."
