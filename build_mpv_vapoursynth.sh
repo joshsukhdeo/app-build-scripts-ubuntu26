@@ -16,7 +16,7 @@ readonly USER_NAME="${SUDO_USER:-$USER}"
 # Optimized compilation flags for best hardware performance and stability
 export CFLAGS="-O3 -march=native -mtune=native -pipe -fno-plt -fno-semantic-interposition"
 export CXXFLAGS="-O3 -march=native -mtune=native -pipe -fno-plt -fno-semantic-interposition"
-export LDFLAGS="-Wl,-O1 -Wl,--as-needed -Wl,--sort-common -Wl,-z,now"
+export LDFLAGS="-fuse-ld=lld -Wl,-O1 -Wl,--as-needed -Wl,--sort-common -Wl,-z,now"
 export CC="clang"
 export CXX="clang++"
 export AR="llvm-ar"
@@ -182,8 +182,9 @@ build_mpv() {
 --disable-encoders
 --disable-muxers
 --disable-doc
---extra-cflags=-O3 -march=native -mtune=native -pipe -fno-plt -flto
---extra-cxxflags=-O3 -march=native -mtune=native -pipe -fno-plt -flto
+--extra-cflags=-O3 -march=native -mtune=native -pipe -fno-plt -flto -fuse-ld=lld
+--extra-cxxflags=-O3 -march=native -mtune=native -pipe -fno-plt -flto -fuse-ld=lld
+--extra-ldflags=-fuse-ld=lld
 EOF
 
     log_info "Configuring mpv options..."
@@ -198,6 +199,8 @@ EOF
 -Db_pgo=generate
 -Dc_args=-march=native -mtune=native -pipe
 -Dcpp_args=-march=native -mtune=native -pipe
+-Dc_link_args=-fuse-ld=lld
+-Dcpp_link_args=-fuse-ld=lld
 -Dalsa=enabled
 -Dpulse=enabled
 -Dpipewire=enabled
