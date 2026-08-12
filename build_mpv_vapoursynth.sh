@@ -212,8 +212,20 @@ EOF
 EOF
 
     log_info "Running rebuild to compile FFmpeg and mpv (PGO Pass 1)..."
-    ./rebuild "-j$(nproc)"
+    ./update
+    ./clean
+    scripts/libplacebo-config
+    scripts/libplacebo-build "-j$(nproc)"
 
+    log_info "Patching libplacebo.pc to include -lstdc++ statically..."
+    sed -i 's/-lplacebo/-lplacebo -lstdc++/' build_libs/lib/pkgconfig/libplacebo.pc
+
+    scripts/libass-config
+    scripts/libass-build "-j$(nproc)"
+    scripts/ffmpeg-config
+    scripts/ffmpeg-build "-j$(nproc)"
+    scripts/mpv-config
+    scripts/mpv-build "-j$(nproc)"
     log_info "Running headless mpv to generate PGO profiling data..."
     export LLVM_PROFILE_FILE="default_%p.profraw"
     ./mpv/build/mpv "av://lavfi:testsrc=size=1920x1080:rate=60:duration=10" -vo=null -ao=null || true
