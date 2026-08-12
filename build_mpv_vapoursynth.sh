@@ -237,7 +237,8 @@ EOF
     sed -i 's/-Db_pgo=generate/-Db_pgo=use/g' mpv_options
     
     log_info "Rebuilding mpv (PGO Pass 2)..."
-    ./build-mpv "-j$(nproc)"
+    scripts/mpv-config
+    scripts/mpv-build "-j$(nproc)"
 
     log_info "Installing PGO-optimized mpv..."
     sudo "${VS_VENV}/bin/meson" install -C mpv/build
