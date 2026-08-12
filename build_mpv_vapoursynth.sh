@@ -195,7 +195,6 @@ build_mpv() {
 --enable-lto
 --disable-encoders
 --disable-muxers
---disable-programs
 --disable-doc
 --extra-cflags=-O3 -march=native -mtune=native -pipe -fno-plt -flto
 --extra-cxxflags=-O3 -march=native -mtune=native -pipe -fno-plt -flto

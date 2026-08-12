@@ -18,8 +18,8 @@ setup() {
     fi
 
     run grep -q -- "--disable-programs" "$SCRIPT"
-    if [ "$status" -ne 0 ]; then
-        echo "Missing --disable-programs"
+    if [ "$status" -eq 0 ]; then
+        echo "Error: --disable-programs is present! skiptosilence.lua and dynamic-crop.lua need ffprobe!"
         return 1
     fi
 }
