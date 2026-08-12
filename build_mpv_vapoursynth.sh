@@ -71,9 +71,9 @@ setup_python_venv() {
     sudo chown -R "${USER_NAME}:${USER_NAME}" "${VS_VENV}"
     
     if command -v mise >/dev/null 2>&1; then
-        mise install python@latest
+        mise install python@3.14.7
         if [[ ! -d "${VS_VENV}/bin" ]]; then
-            mise exec python@latest -- python -m venv "${VS_VENV}"
+            mise exec python@3.14.7 -- python -m venv "${VS_VENV}"
         fi
     else
         log_err "mise is not installed or not in PATH."
