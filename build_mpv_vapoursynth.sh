@@ -16,7 +16,7 @@ readonly USER_NAME="${SUDO_USER:-$USER}"
 # Optimized compilation flags for best hardware performance and stability
 export CFLAGS="-O3 -march=native -mtune=native -pipe -fno-plt -fno-semantic-interposition"
 export CXXFLAGS="-O3 -march=native -mtune=native -pipe -fno-plt -fno-semantic-interposition"
-export LDFLAGS="-fuse-ld=lld -Wl,-O1 -Wl,--as-needed -Wl,--sort-common -Wl,-z,now"
+export LDFLAGS="-fuse-ld=lld -lstdc++ -Wl,-O1 -Wl,--as-needed -Wl,--sort-common -Wl,-z,now"
 export CC="clang"
 export CXX="clang++"
 export AR="llvm-ar"
