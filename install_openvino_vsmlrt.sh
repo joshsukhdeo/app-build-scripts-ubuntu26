@@ -14,6 +14,9 @@ readonly TMP_DIR=$(mktemp -d)
 readonly VS_MLRT_REPO="https://github.com/AmusementClub/vs-mlrt.git"
 readonly PLUGIN_DIR="/usr/local/lib/vapoursynth"
 
+# Source GitHub helper functions
+source "$(dirname "$0")/libs/bash-helpers/github_helpers.sh"
+
 # shellcheck source=utils.sh
 source "$(dirname "${BASH_SOURCE[0]}")/utils.sh"
 
@@ -71,23 +74,15 @@ main() {
     sudo mkdir -p "${PLUGIN_DIR}"
     sudo cp -a *.so "${PLUGIN_DIR}/"
     
-    log_info "Installing vsmlrt python wrapper..."
-    if command -v gh >/dev/null 2>&1; then
-        gh api -H "Accept: application/vnd.github.v3.raw" /repos/AmusementClub/vs-mlrt/contents/scripts/vsmlrt.py > "${TMP_DIR}/vsmlrt.py"
-        sudo mv "${TMP_DIR}/vsmlrt.py" "${VS_VENV}/lib/python3.14/site-packages/vsmlrt.py"
-    else
-        sudo curl -sL "https://raw.githubusercontent.com/AmusementClub/vs-mlrt/master/scripts/vsmlrt.py" -o "${VS_VENV}/lib/python3.14/site-packages/vsmlrt.py"
-    fi
-    
-    log_info "Downloading and installing OpenVINO ONNX RIFE models..."
-    sudo mkdir -p "${PLUGIN_DIR}/models"
-    if command -v gh >/dev/null 2>&1; then
-        gh release download "external-models" -R "AmusementClub/vs-mlrt" -p "rife_v4.12_lite.7z" -D "${TMP_DIR}"
-        sudo 7z x "${TMP_DIR}/rife_v4.12_lite.7z" -o"${PLUGIN_DIR}/models/" -y
-    else
-        curl -sL "https://github.com/AmusementClub/vs-mlrt/releases/download/external-models/rife_v4.12_lite.7z" -o "${TMP_DIR}/rife.7z"
-        sudo 7z x "${TMP_DIR}/rife.7z" -o"${PLUGIN_DIR}/models/" -y
-    fi
+    echo "Downloading vsmlrt.py wrapper..."
+    gh-cp "AmusementClub/vs-mlrt" "scripts/vsmlrt.py" "${VS_VENV}/lib/python3.14/site-packages/vsmlrt.py"
+    sudo chmod +x "${VS_VENV}/lib/python3.14/site-packages/vsmlrt.py"
+
+    # 4. Download RIFE v4.12-lite ONNX Models
+    echo "Downloading RIFE models..."
+    gh-release-download "AmusementClub/vs-mlrt" "${TMP_DIR}" "external-models" "rife_v4.12_lite.7z"
+    mv "${TMP_DIR}/rife_v4.12_lite.7z" "${TMP_DIR}/rife.7z"
+    sudo 7z x "${TMP_DIR}/rife.7z" -o"${PLUGIN_DIR}/models/" -y
     
     log_info "Source compilation complete. The OpenVINO vs-mlrt plugin is securely installed!"
 }
