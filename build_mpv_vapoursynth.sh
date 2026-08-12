@@ -231,7 +231,7 @@ EOF
     ./mpv/build/mpv "av://lavfi:testsrc=size=1920x1080:rate=60:duration=10" -vo=null -ao=null || true
     
     log_info "Merging profraw files into profdata..."
-    llvm-profdata merge -output=default.profdata *.profraw || true
+    llvm-profdata merge -output=mpv/build/default.profdata *.profraw || true
 
     log_info "Configuring mpv options (PGO Use Phase)..."
     sed -i 's/-Db_pgo=generate/-Db_pgo=use/g' mpv_options
