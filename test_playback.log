@@ -1,0 +1,113 @@
+Option vf-remove: item label @svp not found.
+Option vf-remove: item label @svp not found.
+Option af-toggle: Label audio-tweak not found
+Option vf-toggle: Label svp not found
+[auto_profiles] Applying auto profile: SilenceSkip-inactive
+Option af-toggle: Label audio-tweak not found
+Option vf-toggle: Label svp not found
+[osd_clock] interval:15m, format:%H:%M
+[playlistmanager] auto showamount: 19
+[skiptosilence] script-opts/skiptosilence.conf:4 unknown key 'quietness ', ignoring
+[skiptosilence] script-opts/skiptosilence.conf:7 unknown key 'duration ', ignoring
+[skiptosilence] script-opts/skiptosilence.conf:11 unknown key 'mutewhileskipping ', ignoring
+Resuming playback. This behavior can be disabled with --no-resume-playback.
+Resuming playback. This behavior can be disabled with --no-resume-playback.
+Playing: /home/tay/gdrive/Drive/webtorrent/The Americans (2013) Season 1-6 S01-S06 (1080p Mixed x265 HEVC 10bit EAC3 5.1 Silence)/Season 5 (AMZN WEB-DL)/The Americans (2013) - S05E02 - Pests (1080p AMZN WEB-DL x265 Silence).mkv
+ ● Video  --vid=1              (hevc 1920x1080 23.976 fps) [default]
+ ● Audio  --aid=1  --alang=en  (eac3 6ch 48000 Hz)
+ ● Subs   --sid=1  --slang=en  (subrip)
+[dynamic_crop] File loaded.
+[autosub] Reactivate external subtitle files:
+[autosub] English embedded subtitles active
+[autosub] => NOT downloading new subtitles
+[autochapters] Subprocess failed: init
+Using hardware decoding (vaapi-copy).
+[autochapters] autochapters: couldn't parse media filename, is guessit installed?
+AO: [pipewire] 48000Hz 2.1 3ch floatp
+VO: [gpu-next] 1920x1080 yuv420p10
+AV: 00:29:58 / 00:47:24 (63%) A-V:  0.000 Cache: 1042s/632MB
+(Paused) AV: 00:29:58 / 00:47:24 (63%) A-V:  0.000 Cache: 1042s/632MB
+[dynamic_crop] Meta Stats:
+(Paused) AV: 00:29:58 / 00:47:24 (63%) A-V:  0.000 Cache: 1042s/632MB
+[dynamic_crop] Limit - min/max: 26/26 | counter: 0
+(Paused) AV: 00:29:58 / 00:47:24 (63%) A-V:  0.000 Cache: 1042s/632MB
+[dynamic_crop] Trusted - unique: 1 | offset: X:0 Y:0 
+(Paused) AV: 00:29:58 / 00:47:24 (63%) A-V:  0.000 Cache: 1042s/632MB
+[dynamic_crop] \ w=1920:h=1080:x=0:y=0         | offX=  0 offY=  0 | applied=1 overall=0.125s accumulated=0.125s
+(Paused) AV: 00:29:58 / 00:47:24 (63%) A-V:  0.000 Cache: 1042s/632MB
+[dynamic_crop] Buffer - unique: 2 | total: 2 0.166s | known_ratio: 2 0.166s
+(Paused) AV: 00:29:58 / 00:47:24 (63%) A-V:  0.000 Cache: 1042s/632MB
+AV: 00:29:58 / 00:47:24 (63%) A-V:  0.000 Cache: 1042s/632MB
+AV: 00:29:58 / 00:47:24 (63%) A-V:  0.000 Cache: 1046s/637MB
+(...) AV: 00:29:58 / 00:47:24 (63%) A-V:  0.000 Cache: 1046s/636MB
+(...) AV: 00:29:58 / 00:47:24 (63%) A-V:  0.000 Cache: 1046s/635MB
+(...) AV: 00:29:58 / 00:47:24 (63%) A-V:  0.000 Cache: 1045s/635MB
+(...) AV: 00:29:58 / 00:47:24 (63%) A-V:  0.000 Cache: 1044s/634MB
+(...) AV: 00:29:58 / 00:47:24 (63%) A-V:  0.000 Cache: 1044s/633MB
+(...) AV: 00:29:58 / 00:47:24 (63%) A-V:  0.000 Cache: 1043s/633MB
+(...) AV: 00:29:58 / 00:47:24 (63%) A-V:  0.000 Cache: 1043s/632MB
+(...) AV: 00:29:58 / 00:47:24 (63%) A-V:  0.000 Cache: 1042s/632MB
+(...) AV: 00:29:58 / 00:47:24 (63%) A-V:  0.000 Cache: 1041s/632MB
+AV: 00:29:58 / 00:47:24 (63%) A-V: -0.000 Cache: 1041s/631MB
+AV: 00:29:58 / 00:47:24 (63%) A-V:  0.000 Cache: 1041s/631MB
+AV: 00:29:58 / 00:47:24 (63%) A-V: -0.000 Cache: 1041s/631MB
+AV: 00:29:58 / 00:47:24 (63%) A-V:  0.000 Cache: 1041s/631MB
+AV: 00:29:59 / 00:47:24 (63%) A-V:  0.000 Cache: 1041s/631MB
+AV: 00:29:59 / 00:47:24 (63%) A-V:  0.000 Cache: 1040s/631MB
+AV: 00:29:59 / 00:47:24 (63%) A-V:  0.000 Cache: 1041s/630MB
+AV: 00:29:59 / 00:47:24 (63%) A-V:  0.000 Cache: 1040s/630MB
+AV: 00:30:00 / 00:47:24 (63%) A-V:  0.000 Cache: 1040s/630MB
+AV: 00:30:00 / 00:47:24 (63%) A-V:  0.000 Cache: 1039s/629MB
+AV: 00:30:01 / 00:47:24 (63%) A-V:  0.000 Cache: 1039s/629MB
+AV: 00:30:01 / 00:47:24 (63%) A-V:  0.000 Cache: 1038s/628MB
+AV: 00:30:02 / 00:47:24 (63%) A-V:  0.000 Cache: 1038s/628MB
+AV: 00:30:02 / 00:47:24 (63%) A-V:  0.000 Cache: 1037s/628MB
+AV: 00:30:02 / 00:47:24 (63%) A-V:  0.000 Cache: 1038s/627MB
+AV: 00:30:02 / 00:47:24 (63%) A-V:  0.000 Cache: 1037s/627MB
+AV: 00:30:03 / 00:47:24 (63%) A-V:  0.000 Cache: 1037s/627MB
+AV: 00:30:03 / 00:47:24 (63%) A-V:  0.000 Cache: 1036s/627MB
+AV: 00:30:03 / 00:47:24 (63%) A-V:  0.000 Cache: 1037s/626MB
+AV: 00:30:03 / 00:47:24 (63%) A-V:  0.000 Cache: 1036s/626MB
+AV: 00:30:04 / 00:47:24 (63%) A-V:  0.000 Cache: 1036s/626MB
+AV: 00:30:04 / 00:47:24 (63%) A-V:  0.000 Cache: 1035s/626MB
+AV: 00:30:04 / 00:47:24 (63%) A-V:  0.000 Cache: 1036s/626MB
+AV: 00:30:04 / 00:47:24 (63%) A-V:  0.000 Cache: 1036s/625MB
+AV: 00:30:04 / 00:47:24 (63%) A-V:  0.000 Cache: 1035s/625MB
+AV: 00:30:05 / 00:47:24 (63%) A-V:  0.000 Cache: 1035s/625MB
+AV: 00:30:05 / 00:47:24 (63%) A-V:  0.000 Cache: 1034s/625MB
+AV: 00:30:05 / 00:47:24 (63%) A-V:  0.000 Cache: 1034s/624MB
+AV: 00:30:06 / 00:47:24 (63%) A-V:  0.000 Cache: 1034s/624MB
+AV: 00:30:06 / 00:47:24 (64%) A-V:  0.000 Cache: 1034s/624MB
+AV: 00:30:06 / 00:47:24 (64%) A-V:  0.000 Cache: 1033s/624MB
+AV: 00:30:06 / 00:47:24 (64%) A-V:  0.000 Cache: 1033s/623MB
+AV: 00:30:07 / 00:47:24 (64%) A-V:  0.000 Cache: 1033s/623MB
+AV: 00:30:07 / 00:47:24 (64%) A-V:  0.000 Cache: 1032s/623MB
+AV: 00:30:07 / 00:47:24 (64%) A-V:  0.000 Cache: 1033s/623MB
+AV: 00:30:07 / 00:47:24 (64%) A-V:  0.000 Cache: 1032s/623MB
+AV: 00:30:07 / 00:47:24 (64%) A-V:  0.000 Cache: 1032s/622MB
+AV: 00:30:08 / 00:47:24 (64%) A-V:  0.000 Cache: 1032s/622MB
+AV: 00:30:08 / 00:47:24 (64%) A-V:  0.000 Cache: 1031s/622MB
+AV: 00:30:08 / 00:47:24 (64%) A-V:  0.000 Cache: 1032s/622MB
+AV: 00:30:08 / 00:47:24 (64%) A-V:  0.000 Cache: 1031s/622MB
+AV: 00:30:08 / 00:47:24 (64%) A-V:  0.000 Cache: 1031s/621MB
+AV: 00:30:09 / 00:47:24 (64%) A-V:  0.000 Cache: 1031s/621MB
+AV: 00:30:09 / 00:47:24 (64%) A-V:  0.000 Cache: 1030s/621MB
+AV: 00:30:09 / 00:47:24 (64%) A-V:  0.000 Cache: 1031s/621MB
+AV: 00:30:09 / 00:47:24 (64%) A-V:  0.000 Cache: 1030s/621MB
+AV: 00:30:09 / 00:47:24 (64%) A-V:  0.000 Cache: 1030s/620MB
+AV: 00:30:10 / 00:47:24 (64%) A-V:  0.000 Cache: 1030s/620MB
+AV: 00:30:10 / 00:47:24 (64%) A-V:  0.000 Cache: 1029s/620MB
+AV: 00:30:10 / 00:47:24 (64%) A-V:  0.000 Cache: 1029s/619MB
+AV: 00:30:11 / 00:47:24 (64%) A-V:  0.000 Cache: 1029s/619MB
+AV: 00:30:11 / 00:47:24 (64%) A-V:  0.000 Cache: 1028s/619MB
+AV: 00:30:11 / 00:47:24 (64%) A-V:  0.000 Cache: 1029s/619MB
+AV: 00:30:11 / 00:47:24 (64%) A-V:  0.000 Cache: 1028s/619MB
+AV: 00:30:11 / 00:47:24 (64%) A-V:  0.000 Cache: 1028s/618MB
+AV: 00:30:12 / 00:47:24 (64%) A-V:  0.000 Cache: 1028s/618MB
+AV: 00:30:12 / 00:47:24 (64%) A-V:  0.000 Cache: 1027s/618MB
+AV: 00:30:12 / 00:47:24 (64%) A-V:  0.000 Cache: 1028s/618MB
+AV: 00:30:12 / 00:47:24 (64%) A-V:  0.000 Cache: 1027s/618MB
+AV: 00:30:12 / 00:47:24 (64%) A-V:  0.000 Cache: 1027s/617MB
+AV: 00:30:13 / 00:47:24 (64%) A-V:  0.000 Cache: 1027s/617MB
+AV: 00:30:13 / 00:47:24 (64%) A-V:  0.000 Cache: 1026s/617MB
+AV: 00:30:13 / 00:47:24 (64%) A-V:  0.000 Cache: 1027s/617MB

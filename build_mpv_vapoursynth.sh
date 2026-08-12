@@ -73,7 +73,8 @@ install_dependencies() {
         libass-dev libbluray-dev libdvdread-dev libdvdnav-dev libuchardet-dev \
         mediainfo lsof libqt5concurrent5 libqt5svg5 libqt5qml5 \
         libjemalloc2 libjemalloc-dev numactl \
-        libpipewire-0.3-dev libpulse-dev libasound2-dev
+        libpipewire-0.3-dev libpulse-dev libasound2-dev \
+        libarchive-dev libva-dev libvdpau-dev librubberband-dev
 }
 
 setup_python_venv() {
@@ -129,35 +130,19 @@ build_vapoursynth() {
     git pull origin master
 
     rm -rf build
+    
+    # Activate venv so meson detects and links against our specific Python
+    source "${VS_VENV}/bin/activate"
+    
     meson setup build
     meson compile -C build
     sudo "$(command -v meson)" install -C build
 
-    local vs_pkg_config
-    vs_pkg_config=$(find /usr -name "vapoursynth.pc" 2>/dev/null | head -n 1 || true)
+    # Create symlinks for vspipe and vapoursynth just in case
+    sudo ln -sf "${VS_VENV}/bin/vspipe" /usr/local/bin/vspipe
+    sudo ln -sf "${VS_VENV}/bin/vapoursynth" /usr/local/bin/vapoursynth
     
-    if [[ -n "${vs_pkg_config}" ]]; then
-        export PKG_CONFIG_PATH="$(dirname "${vs_pkg_config}"):${PKG_CONFIG_PATH:-}"
-        log_info "Found vapoursynth pkgconfig at $(dirname "${vs_pkg_config}")"
-        
-        local vs_lib_dir
-        vs_lib_dir=$(dirname "${vs_pkg_config}")
-        vs_lib_dir=$(dirname "${vs_lib_dir}")
-        local vs_include_dir="${vs_lib_dir}/include"
-        
-        if [[ -d "${vs_include_dir}" ]]; then
-            sudo mkdir -p /usr/local/include/vapoursynth
-            sudo cp -r "${vs_include_dir}"/*.h /usr/local/include/vapoursynth/
-        fi
-        
-        sudo cp -a "${vs_lib_dir}"/libvapoursynth*.so* /usr/local/lib/
-        sudo ldconfig
-        
-        sudo ln -sf "${VS_VENV}/bin/vspipe" /usr/local/bin/vspipe
-        sudo ln -sf "${VS_VENV}/bin/vapoursynth" /usr/local/bin/vapoursynth
-    else
-        log_err "WARNING: Could not find vapoursynth.pc"
-    fi
+    sudo ldconfig
     popd >/dev/null
 }
 
@@ -166,11 +151,13 @@ install_vs_plugins() {
     # shellcheck source=/dev/null
     source "${VS_VENV}/bin/activate"
     
-    # Always force upgrade for python modules and tools using python -m pip
-    python -m pip install --upgrade pip
-    python -m pip install --upgrade vsutil vstools vskernels havsfunc psutil numpy scipy numexpr orjson yt-dlp
-    python -m pip install --upgrade --force-reinstall git+https://github.com/adworacz/zsmooth.git
-    python -m pip install --upgrade --force-reinstall git+https://github.com/HomeOfVapourSynthEvolution/mvsfunc.git
+    # Use uv for blazingly fast dependency installation and resolution
+    python -m pip install --upgrade pip uv
+    
+    # Install yt-dlp with [default] extras for maximum download performance (brotli, websockets, etc)
+    uv pip install --upgrade vsutil vstools vskernels havsfunc psutil numpy scipy numexpr orjson "yt-dlp[default]"
+    uv pip install --upgrade --reinstall git+https://github.com/adworacz/zsmooth.git
+    uv pip install --upgrade --reinstall git+https://github.com/HomeOfVapourSynthEvolution/mvsfunc.git
     
     # Symlink yt-dlp so mpv and the system can use it
     sudo ln -sf "${VS_VENV}/bin/yt-dlp" /usr/local/bin/yt-dlp
@@ -182,6 +169,11 @@ build_mpv() {
         git clone https://github.com/mpv-player/mpv-build.git
     fi
     pushd mpv-build >/dev/null
+
+    log_info "Configuring to track master branches for absolute latest performance..."
+    ./use-ffmpeg-master
+    ./use-mpv-master
+    ./use-libass-master
 
     log_info "Fetching the latest FFmpeg, libass, and mpv sources..."
     git pull origin master
@@ -197,14 +189,10 @@ build_mpv() {
 --enable-gpl
 --enable-version3
 --enable-nonfree
---disable-cuda-llvm
---disable-cuvid
---disable-nvdec
---disable-nvenc
 --enable-vaapi
 --enable-lto
---extra-cflags=-O3 -march=native -mtune=native -pipe -fno-plt
---extra-cxxflags=-O3 -march=native -mtune=native -pipe -fno-plt
+--extra-cflags=-O3 -march=native -mtune=native -pipe -fno-plt -flto
+--extra-cxxflags=-O3 -march=native -mtune=native -pipe -fno-plt -flto
 EOF
 
     log_info "Configuring mpv options..."
@@ -212,6 +200,8 @@ EOF
 -Dlua=luajit
 -Djavascript=enabled
 -Dvapoursynth=enabled
+-Dlibarchive=enabled
+-Drubberband=enabled
 -Doptimization=3
 -Db_lto=true
 -Dc_args=-march=native -mtune=native -pipe
