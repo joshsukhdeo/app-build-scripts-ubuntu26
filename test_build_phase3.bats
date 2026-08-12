@@ -13,7 +13,7 @@ setup() {
 }
 
 @test "Phase 3 - Script executes headless mpv on dummy.mp4 to generate profiling data" {
-    run grep -q "mpv/build/mpv.*dummy.mp4" "$SCRIPT"
+    run grep -q "mpv/build/mpv.*av://lavfi:testsrc" "$SCRIPT"
     if [ "$status" -ne 0 ]; then
         echo "Missing headless PGO execution step"
         return 1
@@ -29,9 +29,9 @@ setup() {
 }
 
 @test "Phase 3 - Script recompiles mpv with build-mpv (Pass 2)" {
-    run grep -q "\./build-mpv" "$SCRIPT"
+    run grep -q "scripts/mpv-build" "$SCRIPT"
     if [ "$status" -ne 0 ]; then
-        echo "Missing ./build-mpv execution for PGO Pass 2"
+        echo "Missing scripts/mpv-build execution for PGO Pass 2"
         return 1
     fi
 }
