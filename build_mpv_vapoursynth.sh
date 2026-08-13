@@ -253,7 +253,7 @@ EOF
     
     sudo tee /usr/local/bin/mpv > /dev/null << EOF
 #!/bin/bash
-export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libmimalloc.so.2
+export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libmimalloc.so
 export MIMALLOC_LARGE_OS_PAGES=1
 export PYTHONPATH=${vs_python_site_packages}:\${PYTHONPATH:-}
 export VSSCRIPT_PATH=${vs_python_site_packages}/vapoursynth/libvsscript.so
