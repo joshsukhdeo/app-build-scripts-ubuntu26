@@ -29,6 +29,12 @@ main() {
     log_info "Preparing vs-mlrt source compilation..."
     
     log_info "Installing build dependencies (cmake, ninja-build, onnx, protobuf, stdc++)..."
+    echo "Starting background downloads for vsmlrt.py and RIFE models..."
+    gh-cp "AmusementClub/vs-mlrt" "scripts/vsmlrt.py" "${TMP_DIR}/vsmlrt.py" &
+    pid_wrapper=$!
+    gh-release-download "AmusementClub/vs-mlrt" "${TMP_DIR}" "external-models" "rife_v4.12_lite.7z" &
+    pid_models=$!
+
     sudo apt-get update
     sudo apt-get install -y build-essential cmake ninja-build git libonnx-dev libprotobuf-dev p7zip-full
     
@@ -74,13 +80,11 @@ main() {
     sudo mkdir -p "${PLUGIN_DIR}"
     sudo cp -a *.so "${PLUGIN_DIR}/"
     
-    echo "Downloading vsmlrt.py wrapper..."
-    gh-cp "AmusementClub/vs-mlrt" "scripts/vsmlrt.py" "${VS_VENV}/lib/python3.14/site-packages/vsmlrt.py"
+    wait $pid_wrapper
+    sudo cp "${TMP_DIR}/vsmlrt.py" "${VS_VENV}/lib/python3.14/site-packages/vsmlrt.py"
     sudo chmod +x "${VS_VENV}/lib/python3.14/site-packages/vsmlrt.py"
 
-    # 4. Download RIFE v4.12-lite ONNX Models
-    echo "Downloading RIFE models..."
-    gh-release-download "AmusementClub/vs-mlrt" "${TMP_DIR}" "external-models" "rife_v4.12_lite.7z"
+    wait $pid_models
     mv "${TMP_DIR}/rife_v4.12_lite.7z" "${TMP_DIR}/rife.7z"
     sudo 7z x "${TMP_DIR}/rife.7z" -o"${PLUGIN_DIR}/models/" -y
     

@@ -151,21 +151,24 @@ install_vs_plugins() {
     sudo ln -sf "${VS_VENV}/bin/yt-dlp" /usr/local/bin/yt-dlp
 }
 
-build_mpv() {
-    log_step "Building mpv and FFmpeg with mpv-build"
+fetch_mpv_sources() {
+    log_step "Fetching mpv and ffmpeg sources in the background..."
     if [[ ! -d "mpv-build" ]]; then
         git clone https://github.com/mpv-player/mpv-build.git
     fi
     pushd mpv-build >/dev/null
-
-    log_info "Configuring to track master branches for absolute latest performance..."
     ./use-ffmpeg-master
     ./use-mpv-master
     ./use-libass-master
-
-    log_info "Fetching the latest FFmpeg, libass, and mpv sources..."
     git pull origin master
     ./update
+    popd >/dev/null
+}
+
+build_mpv() {
+    log_step "Building mpv and FFmpeg with mpv-build"
+    # Sources were already cloned in the background by fetch_mpv_sources
+    pushd mpv-build >/dev/null
 
     # Clean any previous builds to ensure options are applied cleanly
     ./clean
@@ -268,6 +271,31 @@ EOF
     popd >/dev/null
 }
 
+install_dummy_package() {
+    log_step "Generating equivs dummy package for mpv..."
+    sudo DEBIAN_FRONTEND=noninteractive apt-get --fix-broken install -y equivs
+    
+    cat << 'EOF' > /tmp/mpv-dummy
+Section: video
+Priority: optional
+Standards-Version: 3.9.2
+
+Package: mpv
+Version: 99:1.0.0-custom
+Maintainer: Local Admin <admin@localhost>
+Architecture: all
+Description: Dummy package for custom mpv build
+ This package prevents apt from installing the repository version of mpv,
+ satisfying dependencies for other packages.
+EOF
+
+    pushd /tmp >/dev/null
+    equivs-build mpv-dummy
+    sudo dpkg -i mpv_1.0.0-custom_all.deb
+    rm mpv-dummy mpv_1.0.0-custom_all.deb
+    popd >/dev/null
+}
+
 finalize_installation() {
     log_step "Registering VapourSynth installation for the current user..."
     # Ensure this runs in the context of the user, not root
@@ -290,14 +318,24 @@ main() {
     clear_build_caches
     install_dependencies
     
-    # Phase 1: Bash Concurrency (Parallelize independent tasks)
-    setup_python_venv &
+    # Phase 1: Heavy network and independent tasks parallelized
+    fetch_mpv_sources &
+    pid_mpv_fetch=$!
+    
+    ( setup_python_venv && install_vs_plugins ) &
+    pid_python=$!
+    
     build_zimg &
-    wait
-
+    pid_zimg=$!
+    
+    wait $pid_python
+    wait $pid_zimg
+    
     build_vapoursynth
-    install_vs_plugins
+    wait $pid_mpv_fetch
+    
     build_mpv
+    install_dummy_package
     finalize_installation
 }
 
