@@ -173,8 +173,40 @@ build_mpv() {
     # Clean any previous builds to ensure options are applied cleanly
     ./clean
 
-    log_info "Configuring FFmpeg options..."
-    cat > ffmpeg_options << 'EOF'
+    log_info "Configuring FFmpeg options dynamically based on GPU..."
+    
+    # Detect GPU
+    local gpu_flags=""
+    if lspci | grep -iE 'vga|3d|display' | grep -i intel >/dev/null; then
+        log_info "Intel GPU detected. Enabling VAAPI and OpenVINO, disabling AMD/Nvidia specific hwaccels."
+        gpu_flags="--enable-vaapi
+--disable-amf
+--disable-nvenc
+--disable-cuvid
+--disable-ffnvcodec"
+    elif lspci | grep -iE 'vga|3d|display' | grep -i nvidia >/dev/null; then
+        log_info "Nvidia GPU detected. Enabling NVENC/CUVID, disabling AMD/Intel specific hwaccels."
+        gpu_flags="--enable-nvenc
+--enable-cuvid
+--enable-ffnvcodec
+--disable-vaapi
+--disable-amf"
+    elif lspci | grep -iE 'vga|3d|display' | grep -i amd >/dev/null; then
+        log_info "AMD GPU detected. Enabling AMF/VAAPI, disabling Nvidia specific hwaccels."
+        gpu_flags="--enable-amf
+--enable-vaapi
+--disable-nvenc
+--disable-cuvid
+--disable-ffnvcodec"
+    else
+        log_info "No specific recognized GPU detected. Falling back to default."
+        gpu_flags="--disable-amf
+--disable-nvenc
+--disable-cuvid
+--disable-ffnvcodec"
+    fi
+
+    cat > ffmpeg_options << EOF
 --cc=clang
 --cxx=clang++
 --ar=llvm-ar
@@ -185,11 +217,9 @@ build_mpv() {
 --enable-gpl
 --enable-version3
 --enable-nonfree
---enable-vaapi
 --enable-lto
---disable-encoders
---disable-muxers
 --disable-doc
+$(echo -e "$gpu_flags")
 --extra-cflags=-O3 -march=native -mtune=native -pipe -fno-plt -flto -fuse-ld=lld
 --extra-cxxflags=-O3 -march=native -mtune=native -pipe -fno-plt -flto -fuse-ld=lld
 --extra-ldflags=-fuse-ld=lld
@@ -265,8 +295,11 @@ exec /usr/local/bin/mpv-bin "\$@"
 EOF
     sudo chmod +x /usr/local/bin/mpv
 
-    log_info "Installing compiled FFmpeg..."
+    log_info "Installing compiled FFmpeg to PATH..."
     sudo make -C ffmpeg_build install
+    sudo cp ffmpeg_build/ffmpeg /usr/local/bin/ffmpeg
+    sudo cp ffmpeg_build/ffprobe /usr/local/bin/ffprobe
+    sudo chmod +x /usr/local/bin/ffmpeg /usr/local/bin/ffprobe
 
     popd >/dev/null
 }
@@ -328,8 +361,8 @@ EOF
     rm ffmpeg-dummy ffmpeg_7.0.0-custom_all.deb
 
     equivs-build vapoursynth-dummy
-    sudo dpkg -i vapoursynth_R65-custom_all.deb
-    rm vapoursynth-dummy vapoursynth_R65-custom_all.deb
+    sudo dpkg -i vapoursynth_65.0-custom_all.deb
+    rm vapoursynth-dummy vapoursynth_65.0-custom_all.deb
     
     popd >/dev/null
 }
