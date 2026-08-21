@@ -1,0 +1,1 @@
+mpv-vapoursynth/test_build_phase3.bats

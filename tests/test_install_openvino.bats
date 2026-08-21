@@ -1,0 +1,1 @@
+ncnn/test_install_openvino.bats

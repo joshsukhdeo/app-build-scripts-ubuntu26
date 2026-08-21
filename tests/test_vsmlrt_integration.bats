@@ -1,0 +1,1 @@
+ncnn/test_vsmlrt_integration.bats

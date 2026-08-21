@@ -13,10 +13,73 @@ shopt -s inherit_errexit 2>/dev/null || true
 readonly VS_VENV="/opt/vapoursynth-venv"
 readonly USER_NAME="${SUDO_USER:-$USER}"
 
-# Optimized compilation flags for best hardware performance and stability
-export CFLAGS="-O3 -march=native -mtune=native -pipe -fno-plt -fno-semantic-interposition"
-export CXXFLAGS="-O3 -march=native -mtune=native -pipe -fno-plt -fno-semantic-interposition"
-export LDFLAGS="-fuse-ld=lld -lstdc++ -Wl,-O1 -Wl,--as-needed -Wl,--sort-common -Wl,-z,now"
+# -----------------------------------------------------------------------------
+# Parameter Parsing
+# -----------------------------------------------------------------------------
+ALL_CODECS=false
+STD_FLAGS=false
+DISABLE_PROFILING=false
+
+show_help() {
+    cat << HELP
+Usage: $0 [OPTIONS]
+
+Builds a highly optimized, PGO-enabled mpv and VapourSynth stack.
+
+Default behavior:
+  - Compiles FFmpeg with only the necessary hardware accelerators for your GPU (disables unused hwaccels).
+  - Applies aggressive experimental hardware optimizations (CFLAGS: -flto -fuse-ld=lld -march=native -mtune=native).
+  - Executes a PGO (Profile-Guided Optimization) build for mpv.
+
+Options:
+  -h, --help                 Show this help message and exit.
+  --std-flags-only           Disable aggressive experimental hardware optimizations (keeps standard optimizations).
+  --no-experimental-flags    Alias for --std-flags-only.
+  --all-codecs               Build FFmpeg with all codecs (do not disable unused hwaccels). Explicitly discouraged.
+  --unoptimized              Alias for --std-flags-only + --all-codecs. Explicitly discouraged.
+  --disable-profiling        Skip the PGO execution block for mpv (build once normally). Explicitly discouraged.
+HELP
+    exit 0
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -h|--help)
+            show_help
+            ;;
+        --std-flags-only|--no-experimental-flags)
+            STD_FLAGS=true
+            shift
+            ;;
+        --all-codecs)
+            ALL_CODECS=true
+            shift
+            ;;
+        --unoptimized)
+            STD_FLAGS=true
+            ALL_CODECS=true
+            shift
+            ;;
+        --disable-profiling)
+            DISABLE_PROFILING=true
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1"
+            show_help
+            ;;
+    esac
+done
+
+if [[ "$STD_FLAGS" == true ]]; then
+    export CFLAGS="-O2 -pipe"
+    export CXXFLAGS="-O2 -pipe"
+    export LDFLAGS="-lstdc++ -Wl,-O1 -Wl,--as-needed"
+else
+    export CFLAGS="-O3 -march=native -mtune=native -pipe -fno-plt -fno-semantic-interposition"
+    export CXXFLAGS="-O3 -march=native -mtune=native -pipe -fno-plt -fno-semantic-interposition"
+    export LDFLAGS="-fuse-ld=lld -lstdc++ -Wl,-O1 -Wl,--as-needed -Wl,--sort-common -Wl,-z,now"
+fi
 export CC="clang"
 export CXX="clang++"
 export AR="llvm-ar"
@@ -177,7 +240,9 @@ build_mpv() {
     
     # Detect GPU
     local gpu_flags=""
-    if lspci | grep -iE 'vga|3d|display' | grep -i intel >/dev/null; then
+    if [[ "$ALL_CODECS" == true ]]; then
+        log_info "--all-codecs or --unoptimized passed. Building all codecs."
+    elif lspci | grep -iE 'vga|3d|display' | grep -i intel >/dev/null; then
         log_info "Intel GPU detected. Enabling VAAPI and OpenVINO, disabling AMD/Nvidia specific hwaccels."
         gpu_flags="--enable-vaapi
 --disable-amf
@@ -206,6 +271,16 @@ build_mpv() {
 --disable-ffnvcodec"
     fi
 
+    local ffmpeg_extra_cflags=""
+    local ffmpeg_extra_ldflags=""
+    if [[ "$STD_FLAGS" == true ]]; then
+        ffmpeg_extra_cflags="-O2 -pipe"
+        ffmpeg_extra_ldflags=""
+    else
+        ffmpeg_extra_cflags="-O3 -march=native -mtune=native -pipe -fno-plt -flto -fuse-ld=lld"
+        ffmpeg_extra_ldflags="-fuse-ld=lld"
+    fi
+
     cat > ffmpeg_options << EOF
 --cc=clang
 --cxx=clang++
@@ -217,28 +292,42 @@ build_mpv() {
 --enable-gpl
 --enable-version3
 --enable-nonfree
---enable-lto
+$([[ "$STD_FLAGS" == false ]] && echo "--enable-lto")
 --disable-doc
 $(echo -e "$gpu_flags")
---extra-cflags=-O3 -march=native -mtune=native -pipe -fno-plt -flto -fuse-ld=lld
---extra-cxxflags=-O3 -march=native -mtune=native -pipe -fno-plt -flto -fuse-ld=lld
---extra-ldflags=-fuse-ld=lld
+--extra-cflags=${ffmpeg_extra_cflags}
+--extra-cxxflags=${ffmpeg_extra_cflags}
+--extra-ldflags=${ffmpeg_extra_ldflags}
 EOF
 
     log_info "Configuring mpv options..."
-    cat > mpv_options << 'EOF'
+    local mpv_c_args=""
+    local mpv_link_args=""
+    local mpv_lto="false"
+    local mpv_optimization="2"
+    if [[ "$STD_FLAGS" == true ]]; then
+        mpv_c_args="-pipe"
+        mpv_link_args=""
+    else
+        mpv_c_args="-march=native -mtune=native -pipe"
+        mpv_link_args="-fuse-ld=lld"
+        mpv_lto="true"
+        mpv_optimization="3"
+    fi
+
+    cat > mpv_options << EOF
 -Dlua=luajit
 -Djavascript=enabled
 -Dvapoursynth=enabled
 -Dlibarchive=enabled
 -Drubberband=enabled
--Doptimization=3
--Db_lto=true
--Db_pgo=generate
--Dc_args=-march=native -mtune=native -pipe
--Dcpp_args=-march=native -mtune=native -pipe
--Dc_link_args=-fuse-ld=lld
--Dcpp_link_args=-fuse-ld=lld
+-Doptimization=${mpv_optimization}
+-Db_lto=${mpv_lto}
+$([[ "$DISABLE_PROFILING" == false ]] && echo "-Db_pgo=generate")
+-Dc_args=${mpv_c_args}
+-Dcpp_args=${mpv_c_args}
+$([[ -n "$mpv_link_args" ]] && echo "-Dc_link_args=${mpv_link_args}")
+$([[ -n "$mpv_link_args" ]] && echo "-Dcpp_link_args=${mpv_link_args}")
 -Dalsa=enabled
 -Dpulse=enabled
 -Dpipewire=enabled
@@ -259,21 +348,23 @@ EOF
     scripts/ffmpeg-build "-j$(nproc)"
     scripts/mpv-config
     scripts/mpv-build "-j$(nproc)"
-    log_info "Running headless mpv to generate PGO profiling data..."
-    export LLVM_PROFILE_FILE="default_%p.profraw"
-    ./mpv/build/mpv "av://lavfi:testsrc=size=1920x1080:rate=60:duration=10" -vo=null -ao=null || true
-    
-    log_info "Merging profraw files into profdata..."
-    llvm-profdata merge -output=mpv/build/default.profdata *.profraw || true
+    if [[ "$DISABLE_PROFILING" == false ]]; then
+        log_info "Running headless mpv to generate PGO profiling data..."
+        export LLVM_PROFILE_FILE="default_%p.profraw"
+        ./mpv/build/mpv "av://lavfi:testsrc=size=1920x1080:rate=60:duration=10" -vo=null -ao=null || true
+        
+        log_info "Merging profraw files into profdata..."
+        llvm-profdata merge -output=mpv/build/default.profdata *.profraw || true
 
-    log_info "Configuring mpv options (PGO Use Phase)..."
-    sed -i 's/-Db_pgo=generate/-Db_pgo=use/g' mpv_options
-    
-    log_info "Rebuilding mpv (PGO Pass 2)..."
-    scripts/mpv-config
-    scripts/mpv-build "-j$(nproc)"
+        log_info "Configuring mpv options (PGO Use Phase)..."
+        sed -i 's/-Db_pgo=generate/-Db_pgo=use/g' mpv_options
+        
+        log_info "Rebuilding mpv (PGO Pass 2)..."
+        scripts/mpv-config
+        scripts/mpv-build "-j$(nproc)"
+    fi
 
-    log_info "Installing PGO-optimized mpv..."
+    log_info "Installing mpv..."
     sudo "${VS_VENV}/bin/meson" install -C mpv/build
 
     log_info "Setting up jemalloc and VapourSynth python env wrapper for mpv..."
