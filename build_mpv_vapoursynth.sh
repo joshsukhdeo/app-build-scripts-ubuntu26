@@ -271,10 +271,11 @@ EOF
     popd >/dev/null
 }
 
-install_dummy_package() {
-    log_step "Generating equivs dummy package for mpv..."
+install_dummy_packages() {
+    log_step "Generating equivs dummy packages for mpv, ffmpeg, and vapoursynth..."
     sudo DEBIAN_FRONTEND=noninteractive apt-get --fix-broken install -y equivs
     
+    # mpv dummy
     cat << 'EOF' > /tmp/mpv-dummy
 Section: video
 Priority: optional
@@ -289,10 +290,47 @@ Description: Dummy package for custom mpv build
  satisfying dependencies for other packages.
 EOF
 
+    # ffmpeg dummy
+    cat << 'EOF' > /tmp/ffmpeg-dummy
+Section: video
+Priority: optional
+Standards-Version: 3.9.2
+
+Package: ffmpeg
+Version: 99:7.0.0-custom
+Maintainer: Local Admin <admin@localhost>
+Architecture: all
+Description: Dummy package for custom ffmpeg build
+EOF
+
+    # vapoursynth dummy
+    cat << 'EOF' > /tmp/vapoursynth-dummy
+Section: video
+Priority: optional
+Standards-Version: 3.9.2
+
+Package: vapoursynth
+Version: 99:65.0-custom
+Maintainer: Local Admin <admin@localhost>
+Architecture: all
+Provides: libvapoursynth, libvapoursynth-dev, python3-vapoursynth
+Description: Dummy package for custom vapoursynth build
+EOF
+
     pushd /tmp >/dev/null
+    
     equivs-build mpv-dummy
     sudo dpkg -i mpv_1.0.0-custom_all.deb
     rm mpv-dummy mpv_1.0.0-custom_all.deb
+    
+    equivs-build ffmpeg-dummy
+    sudo dpkg -i ffmpeg_7.0.0-custom_all.deb
+    rm ffmpeg-dummy ffmpeg_7.0.0-custom_all.deb
+
+    equivs-build vapoursynth-dummy
+    sudo dpkg -i vapoursynth_R65-custom_all.deb
+    rm vapoursynth-dummy vapoursynth_R65-custom_all.deb
+    
     popd >/dev/null
 }
 
@@ -335,7 +373,7 @@ main() {
     wait $pid_mpv_fetch
     
     build_mpv
-    install_dummy_package
+    install_dummy_packages
     finalize_installation
 }
 
